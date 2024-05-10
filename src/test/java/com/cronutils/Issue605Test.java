@@ -31,8 +31,8 @@ class Issue605Test {
     @MethodSource("cronExpressions")
     void testDayOfWeekMappingSpring(CronType cronType, CronMapper mapper, String expectedExpression) {
         Cron sourceCron = getCron(cronType, "0 0 0 ? * 5#1");
-        String destinationCron = mapper.map(sourceCron).toString();
-        assertEquals(expectedExpression, destinationCron);
+        Cron destinationCron = mapper.map(sourceCron);
+        assertEquals(expectedExpression, destinationCron.asString());
     }
 
     private Cron getCron(CronType cronType, @SuppressWarnings("SameParameterValue") final String quartzExpression) {
