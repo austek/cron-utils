@@ -67,5 +67,9 @@ public class ValueMappingFieldExpressionVisitor implements FieldExpressionVisito
     public FieldExpression visit(final QuestionMark questionMark) {
         return questionMark();
     }
-}
 
+    @Override
+    public FieldExpression visit(final RandomExpression random) {
+        return random;
+    }
+}

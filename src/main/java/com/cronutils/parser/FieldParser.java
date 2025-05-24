@@ -22,6 +22,7 @@ import com.cronutils.model.field.value.IntegerFieldValue;
 import com.cronutils.model.field.value.SpecialChar;
 import com.cronutils.model.field.value.SpecialCharFieldValue;
 import com.cronutils.utils.Preconditions;
+import com.cronutils.utils.RandomUtils;
 import com.cronutils.utils.StringUtils;
 import com.cronutils.utils.VisibleForTesting;
 
@@ -44,8 +45,10 @@ public class FieldParser {
     private static final String QUESTION_MARK_STRING = "?";
     private static final String ASTERISK = "*";
     private static final char[] SPECIAL_CHARS_MINUS_STAR = new char[] { '/', '-', ',' };// universally supported
+    private static final String TILDE = "~";
 
     private static final Pattern L_PATTERN = Pattern.compile("[0-9]L", Pattern.CASE_INSENSITIVE);
+    private static final Pattern RANDOM_PATTERN = Pattern.compile("~|[0-9]*~[0-9]*(/[0-9]+)?", Pattern.CASE_INSENSITIVE);
     private static final Pattern W_PATTERN = Pattern.compile("[0-9]W", Pattern.CASE_INSENSITIVE);
     private static final String ASTERISK_ALWAYS_VALUE = "1";
 
@@ -69,6 +72,9 @@ public class FieldParser {
 
             return noSpecialCharsNorStar(expression);
         } else {
+            if (RANDOM_PATTERN.matcher(expression).matches()) {
+                return parseRandom(expression);
+            }
             final String[] array = expression.split(",");
             if (array.length > 1) {
                 return commaSplitResult(array);
@@ -90,6 +96,31 @@ public class FieldParser {
         } else {
             return slashSplit(expression, expression.split(SLASH));
         }
+    }
+
+    private FieldExpression parseRandom(String expression) {
+        RandomUtils randomUtils = new RandomUtils();
+        if (TILDE.equals(expression)) {
+            return new RandomExpression(randomUtils);
+        }
+        String[] parts = expression.split(TILDE, -1);
+        if (parts.length < 2) {
+            return new RandomExpression(randomUtils);
+        }
+        Integer from = parts[0].isEmpty() ? null : Integer.parseInt(parts[0]);
+        String toAndStep = parts[1];
+        Integer to = null;
+        Integer step = null;
+        if (toAndStep.contains(SLASH)) {
+            String[] toStepParts = toAndStep.split(SLASH);
+            if (!toStepParts[0].isEmpty()) {
+                to = Integer.parseInt(toStepParts[0]);
+            }
+            step = Integer.parseInt(toStepParts[1]);
+        } else if (!toAndStep.isEmpty()) {
+            to = Integer.parseInt(toAndStep);
+        }
+        return new RandomExpression(from, to, step, randomUtils);
     }
 
     private FieldExpression commaSplitResult(final String[] array) {
@@ -236,6 +267,9 @@ public class FieldParser {
 
     @VisibleForTesting
     protected FieldValue<?> map(final String string) {
+        if (TILDE.equals(string)) {
+            return new SpecialCharFieldValue(SpecialChar.TILDE);
+        }
         for (final SpecialChar sc : SpecialChar.values()) {
             if (sc.toString().equals(string)) {
                 return new SpecialCharFieldValue(sc);

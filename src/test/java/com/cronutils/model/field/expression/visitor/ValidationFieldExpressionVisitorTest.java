@@ -45,7 +45,7 @@ public class ValidationFieldExpressionVisitorTest {
         MockitoAnnotations.initMocks(this);
         final int startRange = 0;
         final int endRange = 59;
-        fieldConstraints = new FieldConstraints(Collections.emptyMap(), Collections.emptyMap(), Collections.emptySet(), startRange, endRange, true);
+        fieldConstraints = new FieldConstraints(Collections.emptyMap(), Collections.emptyMap(), Collections.singleton(SpecialChar.QUESTION_MARK), startRange, endRange, true);
 
         when(stringValidations.removeValidChars(any(String.class))).thenReturn(StringUtils.EMPTY);
         when(invalidStringValidations.removeValidChars(any(String.class))).thenReturn("$$$");

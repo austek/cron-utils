@@ -101,9 +101,25 @@ public class ValidationFieldExpressionVisitor implements FieldExpressionVisitor 
     }
 
     @Override
-    public QuestionMark visit(final QuestionMark questionMark) {
-        this.checkUnsupportedChars(questionMark);
+    public FieldExpression visit(QuestionMark questionMark) {
+        if (!constraints.getSpecialChars().contains(SpecialChar.QUESTION_MARK)) {
+            throw new IllegalArgumentException("Question mark (?) is not supported!");
+        }
         return questionMark;
+    }
+
+    @Override
+    public FieldExpression visit(RandomExpression random) {
+        if (random.getFrom() != null) {
+            isInRange(new IntegerFieldValue(random.getFrom()));
+        }
+        if (random.getTo() != null) {
+            isInRange(new IntegerFieldValue(random.getTo()));
+        }
+        if (random.getStep() != null) {
+            isInRange(new IntegerFieldValue(random.getStep()));
+        }
+        return random;
     }
 
     private void preConditions(final Between between) {

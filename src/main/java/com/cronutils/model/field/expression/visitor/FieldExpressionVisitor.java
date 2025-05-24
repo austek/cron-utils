@@ -73,5 +73,12 @@ public interface FieldExpressionVisitor {
      * @return FieldExpression instance, never null
      */
     FieldExpression visit(QuestionMark questionMark);
-}
 
+    /**
+     * Performs action on RandomExpression instance.
+     *
+     * @param random - RandomExpression instance, never null
+     * @return FieldExpression instance, never null
+     */
+    FieldExpression visit(RandomExpression random);
+}

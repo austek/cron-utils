@@ -211,6 +211,11 @@ class SecondsDescriptor implements FieldExpressionVisitor {
 
     @Override
     public QuestionMark visit(final QuestionMark questionMark) {
-        return null;
+        return questionMark;
+    }
+
+    @Override
+    public FieldExpression visit(RandomExpression random) {
+        return random;
     }
 }

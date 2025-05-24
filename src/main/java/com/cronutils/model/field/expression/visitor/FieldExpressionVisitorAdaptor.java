@@ -47,7 +47,12 @@ public class FieldExpressionVisitorAdaptor implements FieldExpressionVisitor {
 
     @Override
     public FieldExpression visit(QuestionMark questionMark) {
-        return this.caseDefault(questionMark);
+        return questionMark;
+    }
+
+    @Override
+    public FieldExpression visit(RandomExpression random) {
+        return random;
     }
 
     /**
