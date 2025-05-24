@@ -38,6 +38,10 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.parser.CronParser;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CronDescriptorTest {
@@ -190,5 +194,13 @@ public class CronDescriptorTest {
         assertTrue(descriptor.getResourceBundle().containsKey("hours"));
         assertTrue(descriptor.getResourceBundle().containsKey("minutes"));
         assertTrue(descriptor.getResourceBundle().containsKey("seconds"));
+    }
+
+    @Test
+    public void testDescribeDayOfMonthEveryXDays() {
+        final String cronExpression = "0 0 0 3/5 * ? *";
+        final CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
+        final String description = descriptor.describe(parser.parse(cronExpression));
+        assertEquals("at 00:00 every 5 days from day 3", description);
     }
 }
