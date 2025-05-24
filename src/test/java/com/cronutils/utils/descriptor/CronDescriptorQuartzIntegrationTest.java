@@ -92,12 +92,22 @@ public class CronDescriptorQuartzIntegrationTest {
 
     @Test
     public void testEveryFiveMinutesBetween14and15EveryDay() {
-        assertExpression("0 0/5 14 * * ?", "every 5 minutes at 14 hour");
+        assertExpression("0 0/5 14 * * ?", "every 5 minutes from minute 0 at 14 hour");
     }
 
     @Test
     public void testEveryFiveMinutesBetween14and15AndBetween18And19EveryDay() {
-        assertExpression("0 0/5 14,18 * * ?", "every 5 minutes at 14 and 18 hours");
+        assertExpression("0 0/5 14,18 * * ?", "every 5 minutes from minute 0 at 14 and 18 hours");
+    }
+
+    @Test
+    public void testEveryFiveDaysStartingOnDay3OfTheMonth() {
+        assertExpression("0 0 0 3/5 * ?", "at 00:00 every 5 days from day 3");
+    }
+
+    @Test
+    public void testEveryFiveDaysStartingOnTuesday() {
+        assertExpression("0 0 0 ? * 3/5", "at 00:00 every 5 days from day Tuesday");
     }
 
     /**
@@ -113,7 +123,7 @@ public class CronDescriptorQuartzIntegrationTest {
      */
     @Test
     public void testDescriptionDayOfWeek() {
-        assertExpression("* 0/1 * ? * TUE", "every second every minute at Tuesday day");
+        assertExpression("* 0/1 * ? * TUE", "every second every minute from minute 0 at Tuesday day");
     }
 
     /**
