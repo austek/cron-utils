@@ -103,15 +103,12 @@ public class SingleExecutionTime implements ExecutionTime {
         try {
             ZonedDateTime nextMatch = nextClosestMatch(date);
             if (nextMatch.equals(date)) {
+                // When we're at the exact match, we need to find the next one
                 nextMatch = nextClosestMatch(date.plusSeconds(1));
 
+                // Handle DST transitions
                 if (nextMatch.getOffset().compareTo(date.getOffset()) > 0) {
-                    // daylight saving time overlap case: issue #446
-                    Optional<ZonedDateTime> nextNextExecution = Optional.empty();
-                    try {
-                        nextNextExecution = Optional.of(nextClosestMatch(nextMatch.plusSeconds(1)));
-                    }
-                    catch (final NoSuchValueException canBeIgnored) {}
+                    final Optional<ZonedDateTime> nextNextExecution = nextExecution(nextMatch);
 
                     if (nextNextExecution.isPresent()) {
                         final boolean lessFrequentThan1Hour = (Duration.between(nextMatch, nextNextExecution.get()).toHours() > 1);
@@ -121,6 +118,11 @@ public class SingleExecutionTime implements ExecutionTime {
                         }
                     }
                 }
+            } else if (date.getMinute() != nextMatch.getMinute()) {
+                // If we're crossing a minute boundary, ensure we get the first valid second
+                // in the next minute by using truncatedTo(MINUTES)
+                ZonedDateTime startOfNextMinute = date.truncatedTo(ChronoUnit.MINUTES).plusMinutes(1);
+                nextMatch = nextClosestMatch(startOfNextMinute);
             }
             return Optional.of(nextMatch);
         }
