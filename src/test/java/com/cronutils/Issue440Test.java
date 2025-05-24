@@ -18,7 +18,7 @@ public class Issue440Test {
 		CronDescriptor descriptor = CronDescriptor.instance(Locale.UK);
 		String description = descriptor.describe(parser.parse("* 2,1/31 * * * ?"));
 
-		assertEquals("every second at minute 2 and every 31 minutes", description);
+		assertEquals("every second at minute 2 and every 31 minutes from minute 1", description);
 	}
 
 	@Test
@@ -27,6 +27,6 @@ public class Issue440Test {
 		CronDescriptor descriptor = CronDescriptor.instance(Locale.UK);
 		String description = descriptor.describe(parser.parse("2,1/31 * * * *"));
 
-		assertEquals("at minute 2 and every 31 minutes", description);
+		assertEquals("at minute 2 and every 31 minutes from minute 1", description);
 	}
 }
