@@ -117,7 +117,7 @@ public class FieldParser {
         if (ASTERISK.equals(trimmedStart) && value.equals(ASTERISK_ALWAYS_VALUE)) {
             return noSpecialCharsNorStar(start);
         }
-        if (ASTERISK.equals(trimmedStart) || EMPTY_STRING.equals(start.trim())) {
+        if (ASTERISK.equals(trimmedStart)) {
             return new Every(new IntegerFieldValue(Integer.parseInt(value)));
         } else {
             return new Every(new On(mapToIntegerFieldValue(start)), new IntegerFieldValue(Integer.parseInt(value)));

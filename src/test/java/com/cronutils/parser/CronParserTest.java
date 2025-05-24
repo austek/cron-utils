@@ -37,11 +37,13 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.when;
 
 public class CronParserTest {
     @Mock
     private CronDefinition definition;
+
 
     private CronParser parser;
 
@@ -240,5 +242,52 @@ public class CronParserTest {
     	for(int i = 0; i < crons.size(); i++) {
     		assertEquals(expectedCrons[i].trim(), crons.get(i).asString());
     	}
+    }
+
+    @Test
+    public void testSlashIncrementValidation() {
+        CronDefinition cronDefinition =
+            CronDefinitionBuilder.defineCron()
+                .withMinutes()
+                .withValidRange(0, 59)
+                .withStrictRange()
+                .and()
+                .withHours()
+                .withValidRange(0, 23)
+                .withStrictRange()
+                .and()
+                .withDayOfMonth()
+                .withValidRange(1, 31)
+                .withStrictRange()
+                .and()
+                .withMonth()
+                .withValidRange(1, 12)
+                .withStrictRange()
+                .and()
+                .withDayOfWeek()
+                .withValidRange(0, 6)
+                .withMondayDoWValue(1)
+                .withStrictRange()
+                .and()
+                .withSupportedNicknameYearly()
+                .withSupportedNicknameAnnually()
+                .withSupportedNicknameMonthly()
+                .withSupportedNicknameWeekly()
+                .withSupportedNicknameDaily()
+                .withSupportedNicknameMidnight()
+                .withSupportedNicknameHourly()
+                .matchDayOfWeekAndDayOfMonth()
+                .instance();
+
+        CronParser parser = new CronParser(cronDefinition);
+
+        // Test Case 1 (Invalid): "1 /2 * * *"
+        assertThrows(IllegalArgumentException.class, () -> parser.parse("1 /2 * * *"));
+
+        // Test Case 2 (Valid): "1 */5 * * *"
+        assertDoesNotThrow(() -> parser.parse("1 */5 * * *"));
+
+        // Test Case 3 (Valid): "1 0/2 * * *"
+        assertDoesNotThrow(() -> parser.parse("1 0/2 * * *"));
     }
 }
