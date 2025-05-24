@@ -30,7 +30,7 @@ public class Issue343Test {
 				new Expr("*/10 * * * * *", "every 10 seconds"),
 				new Expr("0 0 8-10 * * *", "every hour between 8 and 10"),
 				new Expr("0 0 6,19 * * *", "at 6 and 19 hours"),
-				new Expr("0 0/30 8-10 * * *", "every 30 minutes every hour between 8 and 10"),
+				new Expr("0 0/30 8-10 * * *", "every 30 minutes from minute 0 every hour between 8 and 10"),
 				new Expr("0 0 9-17 * * MON-FRI", "every hour between 9 and 17 every day between Monday and Friday")
 		);
 	}
