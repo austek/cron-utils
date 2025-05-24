@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Collections;
 import java.util.stream.Stream;
 
 import static com.cronutils.model.field.CronFieldName.*;
@@ -312,39 +313,62 @@ public class SingleExecutionTime implements ExecutionTime {
     }
 
     private ExecutionTimeResult potentialPreviousClosestMatch(final ZonedDateTime date) throws NoSuchValueException {
-        //int startyear = cronDefinition.getFieldDefinition(CronFieldName.YEAR).getConstraints().getStartRange();
-        //final List<Integer> year = yearsValueGenerator.generateCandidates(startyear, date.getYear());
-        final List<Integer> year = yearsValueGenerator.generateCandidates(date.getYear(), date.getYear());
-        final Optional<TimeNode> optionalDays = generateDays(cronDefinition, date);
-        TimeNode days;
-        if (optionalDays.isPresent() && optionalDays.get().getValues().stream().anyMatch(i -> i <= date.getDayOfMonth())) {
-            days = optionalDays.get();
+        // Get all valid years up to the current year
+        final List<Integer> year;
+        if (cronDefinition.containsFieldDefinition(CronFieldName.YEAR)) {
+            year = yearsValueGenerator.generateCandidates(
+                cronDefinition.getFieldDefinition(CronFieldName.YEAR).getConstraints().getStartRange(),
+                date.getYear()
+            ).stream().filter(y -> y <= date.getYear()).collect(Collectors.toList());
         } else {
-            return new ExecutionTimeResult(toEndOfPreviousMonth(date), false);
+            // For cron expressions without a YEAR field (e.g. Unix crons), we use the current year
+            year = Collections.singletonList(date.getYear());
         }
+
+        // For the current date, get the valid days
+        final Optional<TimeNode> optionalDays = generateDays(cronDefinition, date);
+        
+        // Get the highest values for each field
         final int highestMonth = months.getValues().get(months.getValues().size() - 1);
-        final int highestDay = days.getValues().get(days.getValues().size() - 1);
         final int highestHour = hours.getValues().get(hours.getValues().size() - 1);
         final int highestMinute = minutes.getValues().get(minutes.getValues().size() - 1);
         final int highestSecond = seconds.getValues().get(seconds.getValues().size() - 1);
 
-        if (year.isEmpty()) {
-            return getPreviousPotentialYear(date, days, highestMonth, highestDay, highestHour, highestMinute, highestSecond);
-        } else {
-            if(!year.contains(date.getYear())){
-                Optional<Integer> validprevyear = year.stream().filter(y->y<date.getYear()).max(Integer::compareTo);
-                if(validprevyear.isPresent()){
-                    int minus = date.getYear()-validprevyear.get();
-                    return getPreviousPotentialYear(date.minusYears(minus), days, highestMonth, highestDay, highestHour, highestMinute, highestSecond);
-                }else{
-                    return getPreviousPotentialYear(date.minusYears(1), days, highestMonth, highestDay, highestHour, highestMinute, highestSecond);
+        // Check each field from largest to smallest
+        if (!year.contains(date.getYear())) {
+            Optional<Integer> validPrevYear = year.stream().filter(y -> y < date.getYear()).max(Integer::compareTo);
+            if (validPrevYear.isPresent()) {
+                // When moving to a previous year, we need to check the last valid day in the highest month
+                ZonedDateTime lastDateOfYear = ZonedDateTime.of(
+                    validPrevYear.get(), highestMonth,
+                    1, // We'll adjust the day after checking the month's length
+                    highestHour, highestMinute, highestSecond, 0,
+                    date.getZone()
+                );
+                // Get valid days for this date
+                Optional<TimeNode> yearEndDays = generateDays(cronDefinition, lastDateOfYear);
+                if (yearEndDays.isPresent()) {
+                    int lastValidDay = yearEndDays.get().getValues().get(yearEndDays.get().getValues().size() - 1);
+                    ZonedDateTime result = lastDateOfYear.withDayOfMonth(Math.min(lastValidDay, lastDateOfYear.toLocalDate().lengthOfMonth()));
+                    // If seconds are not part of the cron definition, truncate to minutes
+                    if (!cronDefinition.containsFieldDefinition(CronFieldName.SECOND)) {
+                        result = result.truncatedTo(ChronoUnit.MINUTES);
+                    }
+                    return new ExecutionTimeResult(result, false);
                 }
             }
+            return getPreviousPotentialYear(date, optionalDays.orElse(null), highestMonth, optionalDays.map(d -> d.getValues().get(d.getValues().size() - 1)).orElse(1), highestHour, highestMinute, highestSecond);
+        }
+        
+        if (!months.getValues().contains(date.getMonthValue())) {
+            return getPreviousPotentialMonth(date, optionalDays.map(d -> d.getValues().get(d.getValues().size() - 1)).orElse(1), highestHour, highestMinute, highestSecond);
         }
 
-        if (!months.getValues().contains(date.getMonthValue())) {
-            return getPreviousPotentialMonth(date, highestDay, highestHour, highestMinute, highestSecond);
+        if (!optionalDays.isPresent() || !optionalDays.get().getValues().stream().anyMatch(i -> i <= date.getDayOfMonth())) {
+            return new ExecutionTimeResult(toEndOfPreviousMonth(date), false);
         }
+
+        TimeNode days = optionalDays.get();
         if (!days.getValues().contains(date.getDayOfMonth())) {
             return getPreviousPotentialDayOfMonth(date, days, highestHour, highestMinute, highestSecond);
         }
@@ -357,7 +381,14 @@ public class SingleExecutionTime implements ExecutionTime {
         if (!seconds.getValues().contains(date.getSecond())) {
             return getPreviousPotentialSecond(date);
         }
-        return new ExecutionTimeResult(date.truncatedTo(SECONDS), true);
+        // If seconds are not part of the cron definition, truncate to minutes
+        ZonedDateTime result;
+        if (!cronDefinition.containsFieldDefinition(CronFieldName.SECOND)) {
+            result = date.truncatedTo(ChronoUnit.MINUTES);
+        } else {
+            result = date.truncatedTo(ChronoUnit.SECONDS);
+        }
+        return new ExecutionTimeResult(result, true);
     }
 
     private ExecutionTimeResult getPreviousPotentialYear(final ZonedDateTime date, final TimeNode days, final int highestMonth, int highestDay,
