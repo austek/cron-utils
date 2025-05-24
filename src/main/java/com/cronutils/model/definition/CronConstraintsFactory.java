@@ -67,4 +67,26 @@ public class CronConstraintsFactory {
             }
         };
     }
+
+    /**
+     * Creates CronConstraint to ensure that for Quartz cron expressions, either day-of-month or day-of-week must be a question mark.
+     * This follows the Quartz specification which requires one of these fields to be a question mark.
+     *
+     * @return newly created CronConstraint instance, never {@code null};
+     */
+    public static CronConstraint ensureQuartzDayOfMonthAndDayOfWeekValidation() {
+        return new CronConstraint("Invalid cron expression: Both, a day-of-week AND a day-of-month parameter, must have at least one with a '?' character.") {
+            private static final long serialVersionUID = 520379111876897580L;
+
+            @Override
+            public boolean validate(Cron cron) {
+                final CronField dayOfMonthField = cron.retrieve(CronFieldName.DAY_OF_MONTH);
+                final CronField dayOfWeekField = cron.retrieve(CronFieldName.DAY_OF_WEEK);
+
+                // At least one of them must be a question mark
+                return (dayOfMonthField != null && dayOfMonthField.getExpression() instanceof QuestionMark) ||
+                       (dayOfWeekField != null && dayOfWeekField.getExpression() instanceof QuestionMark);
+            }
+        };
+    }
 }

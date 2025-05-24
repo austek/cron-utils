@@ -337,7 +337,7 @@ public class CronDefinitionBuilder {
                 .withMonth().withValidRange(1, 12).and()
                 .withDayOfWeek().withValidRange(1, 7).withMondayDoWValue(2).supportsHash().supportsL().supportsQuestionMark().and()
                 .withYear().withValidRange(1970, 2099).withStrictRange().optional().and()
-                .withCronValidation(CronConstraintsFactory.ensureEitherDayOfWeekOrDayOfMonth())
+                .withCronValidation(CronConstraintsFactory.ensureQuartzDayOfMonthAndDayOfWeekValidation())
                 .instance();
     }
 

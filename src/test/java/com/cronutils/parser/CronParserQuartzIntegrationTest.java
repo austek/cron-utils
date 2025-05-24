@@ -231,7 +231,7 @@ public class CronParserQuartzIntegrationTest {
     public void testReportedErrorContainsSameExpressionAsProvided() {
         IllegalArgumentException e =
                 assertThrows(IllegalArgumentException.class, () -> assertNotNull(ExecutionTime.forCron(parser.parse("0/1 * * * * *"))));
-        assertTrue(e.getMessage().contains("Invalid cron expression: 0/1 * * * * *. Both, a day-of-week AND a day-of-month parameter, are not supported."));
+        assertTrue(e.getMessage().contains("Invalid cron expression: 0/1 * * * * *. Invalid cron expression: Both, a day-of-week AND a day-of-month parameter, must have at least one with a '?' character."));
     }
 
     /**
