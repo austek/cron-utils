@@ -7,7 +7,8 @@ import com.cronutils.model.field.CronField;
 import com.cronutils.model.field.CronFieldName;
 import com.cronutils.model.field.expression.visitor.ValidationFieldExpressionVisitor;
 import com.cronutils.utils.Preconditions;
-
+import java.time.ZonedDateTime;
+import com.cronutils.model.time.ExecutionTime;
 import java.util.*;
 
 public class SingleCron implements Cron {
@@ -108,5 +109,25 @@ public class SingleCron implements Cron {
      */
     public boolean equivalent(final Cron cron) {
         return asString().equals(cron.asString());
+    }
+
+    @Override
+    public boolean overlap(final Cron cron) {
+        Preconditions.checkNotNull(cron, "Cron must not be null");
+
+        ExecutionTime thisExecutionTime = ExecutionTime.forCron(this);
+        ExecutionTime otherExecutionTime = ExecutionTime.forCron(cron);
+
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime oneYearFromNow = now.plusYears(1);
+
+        List<ZonedDateTime> thisExecutionDates = thisExecutionTime.getExecutionDates(now, oneYearFromNow);
+
+        for (ZonedDateTime executionDate : thisExecutionDates) {
+            if (otherExecutionTime.isMatch(executionDate)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
