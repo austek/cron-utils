@@ -42,7 +42,7 @@ public class Issue462Test {
      */
     @Test
     public void testCaseEverySecondOnEvery30Minutes() {
-        final String cronExpression = "* /30 * * * *";
+        final String cronExpression = "* */30 * * * *";
         final Cron cron = parser.parse(cronExpression);
         // create the *** BY NOW ** wrong describe
         final String describe = descriptor.describe(cron);
@@ -55,7 +55,7 @@ public class Issue462Test {
      */
     @Test
     public void testCaseOnceEvery30Minutes() {
-        final String cronExpression = "0 /30 * * * *";
+        final String cronExpression = "0 */30 * * * *";
         final Cron cron = parser.parse(cronExpression);
         // create the correct describe
         final String describe = descriptor.describe(cron);

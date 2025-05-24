@@ -79,4 +79,10 @@ public class CompositeCron implements Cron {
     public boolean equivalent(Cron cron) {
         return asString().equals(cron.asString());
     }
+
+    @Override
+    public boolean overlap(final Cron cron) {
+        // For CompositeCron, we consider it overlapping if any of its constituent crons overlap
+        return crons.stream().anyMatch(c -> c.overlap(cron));
+    }
 }

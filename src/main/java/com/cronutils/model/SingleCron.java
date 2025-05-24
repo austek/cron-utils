@@ -118,16 +118,44 @@ public class SingleCron implements Cron {
         ExecutionTime thisExecutionTime = ExecutionTime.forCron(this);
         ExecutionTime otherExecutionTime = ExecutionTime.forCron(cron);
 
+        // Start checking from now
         ZonedDateTime now = ZonedDateTime.now();
-        ZonedDateTime oneYearFromNow = now.plusYears(1);
+        
+        // Get next execution for both crons
+        Optional<ZonedDateTime> nextThis = thisExecutionTime.nextExecution(now);
+        Optional<ZonedDateTime> nextOther = otherExecutionTime.nextExecution(now);
+        
+        // If either cron has no next execution, they can't overlap
+        if (!nextThis.isPresent() || !nextOther.isPresent()) {
+            return false;
+        }
 
-        List<ZonedDateTime> thisExecutionDates = thisExecutionTime.getExecutionDates(now, oneYearFromNow);
-
-        for (ZonedDateTime executionDate : thisExecutionDates) {
-            if (otherExecutionTime.isMatch(executionDate)) {
+        // Check next 10 executions of this cron against the other cron
+        ZonedDateTime checkDate = nextThis.get();
+        for (int i = 0; i < 10; i++) {
+            if (otherExecutionTime.isMatch(checkDate)) {
                 return true;
             }
+            Optional<ZonedDateTime> next = thisExecutionTime.nextExecution(checkDate);
+            if (!next.isPresent()) {
+                break;
+            }
+            checkDate = next.get();
         }
+
+        // Check next 10 executions of other cron against this cron
+        checkDate = nextOther.get();
+        for (int i = 0; i < 10; i++) {
+            if (thisExecutionTime.isMatch(checkDate)) {
+                return true;
+            }
+            Optional<ZonedDateTime> next = otherExecutionTime.nextExecution(checkDate);
+            if (!next.isPresent()) {
+                break;
+            }
+            checkDate = next.get();
+        }
+
         return false;
     }
 }

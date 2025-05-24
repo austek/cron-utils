@@ -24,9 +24,10 @@ public class ExecutionTimeNanosTest {
                 .withHours().and()
                 .withDayOfMonth().and()
                 .withMonth().and()
+                .withDayOfWeek().and()
                 .instance();
         Cron cron = new CronParser(cronDefinition)
-                .parse("0,1,3 * * * *");
+                .parse("0,1,3 * * * * *");
 
         return ExecutionTime.forCron(cron);
     }
@@ -37,9 +38,10 @@ public class ExecutionTimeNanosTest {
                 .withHours().and()
                 .withDayOfMonth().and()
                 .withMonth().and()
+                .withDayOfWeek().and()
                 .instance();
         Cron cron = new CronParser(cronDefinition)
-                .parse("0,1,3 * * *");
+                .parse("0,1,3 * * * *");
 
         return ExecutionTime.forCron(cron);
     }

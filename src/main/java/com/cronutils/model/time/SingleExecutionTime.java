@@ -589,10 +589,31 @@ public class SingleExecutionTime implements ExecutionTime {
         // Issue #200: Truncating the date to the least granular precision supported by different cron systems.
         // For Quartz, it's seconds while for Unix & Cron4J it's minutes.
         final boolean isSecondGranularity = cronDefinition.containsFieldDefinition(SECOND);
+        // For Quartz-like crons (those with seconds, year, and day of week), we allow nanoseconds
+        final boolean isQuartzLike = isSecondGranularity && 
+            cronDefinition.containsFieldDefinition(YEAR) && 
+            cronDefinition.containsFieldDefinition(DAY_OF_WEEK);
         if (isSecondGranularity) {
+            if (!isQuartzLike && date.getNano() > 0) {
+                return false;
+            }
             date = date.truncatedTo(SECONDS);
         } else {
-            date = date.truncatedTo(ChronoUnit.MINUTES);
+            // For non-second crons, we require seconds to be 0
+            if (date.getSecond() != 0) {
+                return false;
+            }
+            // Check if the minute matches one of our values before checking nanoseconds
+            ZonedDateTime truncated = date.truncatedTo(ChronoUnit.MINUTES);
+            boolean matches = dateValuesInExpectedRanges(truncated, truncated);
+            if (!matches) {
+                return false;
+            }
+            // If we match the minute, then we require nanoseconds to be 0
+            if (date.getNano() != 0) {
+                return false;
+            }
+            date = truncated;
         }
 
         final Optional<ZonedDateTime> last = lastExecution(date);
@@ -646,6 +667,8 @@ public class SingleExecutionTime implements ExecutionTime {
         }
         if (cronDefinition.getFieldDefinition(SECOND) != null) {
             everythingInRange = everythingInRange && validCronDate.getSecond() == date.getSecond();
+        } else {
+            everythingInRange = everythingInRange && date.getSecond() == 0;
         }
         return everythingInRange;
     }

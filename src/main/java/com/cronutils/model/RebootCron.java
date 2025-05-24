@@ -93,4 +93,11 @@ public class RebootCron implements Cron {
     public boolean equivalent(final Cron cron) {
         return asString().equals(cron.asString());
     }
+
+    @Override
+    public boolean overlap(final Cron cron) {
+        // RebootCron is a special case that only runs at reboot
+        // It only overlaps with another RebootCron
+        return cron instanceof RebootCron;
+    }
 }

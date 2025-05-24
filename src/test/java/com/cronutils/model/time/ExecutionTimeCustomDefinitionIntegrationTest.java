@@ -127,7 +127,7 @@ public class ExecutionTimeCustomDefinitionIntegrationTest {
                 .instance();
 
         final CronParser parser = new CronParser(cronDefinition);
-        final Cron cron = parser.parse("0 0 /2 * * *");
+        final Cron cron = parser.parse("0 0 */2 * * *");
         final ZonedDateTime startDateTime = ZonedDateTime.parse("2015-08-28T12:05:14.000-03:00");
 
         final Optional<ZonedDateTime> nextExecution = ExecutionTime.forCron(cron).nextExecution(startDateTime);
