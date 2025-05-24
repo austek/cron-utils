@@ -157,7 +157,7 @@ abstract class DescriptionStrategy {
 	protected String describe(final Every every, final boolean and) {
 		String description;
 		if (every.getPeriod().getValue() > 1) {
-			description = String.format("%s %s ", bundle.getString(EVERY), nominalValue(every.getPeriod()))
+			description = String.format("%s %s ", bundle.getString(EVERY), every.getPeriod())
 					+ " replace_plural ";
 		} else {
 			description = bundle.getString(EVERY) + " %s ";
@@ -166,6 +166,10 @@ abstract class DescriptionStrategy {
 			final Between between = (Between) every.getExpression();
 			description += MessageFormat.format(bundle.getString("between_x_and_y"), nominalValue(between.getFrom()),
 					nominalValue(between.getTo())) + WHITE_SPACE;
+		}
+		if (every.getExpression() instanceof On) {
+			final On on = (On) every.getExpression();
+			description += bundle.getString("from") + " %s " + nominalValue(on.getTime());
 		}
 		return description;
 	}
