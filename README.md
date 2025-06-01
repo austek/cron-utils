@@ -2,16 +2,16 @@
 _We define crons. And support them._
 
 
-cron-utils is a Java library to define, parse, validate, migrate crons as well as get human readable descriptions for them. The project follows the [Semantic Versioning Convention](http://semver.org/), provides OSGi metadata and uses Apache 2.0 license.
+cron-utils is a Java library to define, parse, validate, migrate crons as well as get human readable descriptions for them. The project follows the [Semantic Versioning Convention](https://semver.org/), provides OSGi metadata and uses Apache 2.0 license.
 
-[![Gitter Chat](http://img.shields.io/badge/chat-online-brightgreen.svg)](https://gitter.im/jmrozanec/cron-utils)
+[![Gitter Chat](https://img.shields.io/badge/chat-online-brightgreen.svg)](https://gitter.im/jmrozanec/cron-utils)
 [![Build Status](https://travis-ci.org/jmrozanec/cron-utils.png?branch=master)](https://travis-ci.org/jmrozanec/cron-utils)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=cron-utils&metric=coverage)](https://sonarcloud.io/dashboard/index/cron-utils)
 
 
 **Download**
 
-cron-utils is available on [Maven central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.cronutils%22) repository.
+cron-utils is available on [Maven central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.cronutils%22) repository.
 
     <dependency>
         <groupId>com.cronutils</groupId>
@@ -45,9 +45,9 @@ Now we are developing a new generation of cron-descriptors using neural-translat
  * Validate if cron string expressions match a cron definition.
  * Convert crons between different cron definitions: if you need to migrate expressions, CronMapper may help you!
  * Pre-defined definitions for the following cron libraries are provided:
-    * [Unix](http://www.unix.com/man-page/linux/5/crontab/)
-    * [Cron4j](http://www.sauronsoftware.it/projects/cron4j/)
-    * [Quartz](http://quartz-scheduler.org/)
+    * [Unix](https://www.unix.com/man-page/linux/5/crontab/)
+    * [Cron4j](https://www.sauronsoftware.it/projects/cron4j/)
+    * [Quartz](https://quartz-scheduler.org/)
     * [Spring](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/support/CronExpression.html). We support two definitions: prior to v5.3 and [from v5.3 onwards](https://spring.io/blog/2020/11/10/new-in-spring-5-3-improved-cron-expressions).
  * Obtain last/next execution time as well as time from last execution/time to next execution.
  * Compute the number of executions between two days, and compare crons based on their execution frequencies.
@@ -212,7 +212,7 @@ Contributions are welcome! You can contribute by
  * telling us how you use it! We look forward to [list you at our wiki](https://github.com/jmrozanec/cron-utils/wiki/Projects-using-cron-utils)!
 
 
-Check [our page](http://cronutils.com)! For stats about the project, you can visit our [OpenHUB profile](https://www.openhub.net/p/cron-utils).
+Check [our page](https://cronutils.com)! For stats about the project, you can visit our [OpenHUB profile](https://www.openhub.net/p/cron-utils).
 
 **Other cron-utils projects**
 
