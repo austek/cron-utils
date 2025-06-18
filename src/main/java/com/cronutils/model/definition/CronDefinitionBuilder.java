@@ -240,8 +240,7 @@ public class CronDefinitionBuilder {
      * @return returns CronDefinition instance, never null
      */
     public CronDefinition instance() {
-        final Set<CronConstraint> validations = new HashSet<>();
-        validations.addAll(cronConstraints);
+        final Set<CronConstraint> validations = new HashSet<>(cronConstraints);
         final List<FieldDefinition> values = new ArrayList<>(fields.values());
         values.sort(FieldDefinition.createFieldDefinitionComparator());
         return new CronDefinition(values, validations, cronNicknames, matchDayOfWeekAndDayOfMonth);
@@ -323,8 +322,8 @@ public class CronDefinitionBuilder {
      * </table>
      *
      * <p>Thus in general Quartz cron expressions are as follows:
-     *
-     * <p>S M H DoM M DoW [Y]
+     *   "0 30 17 ?   * 7L *"
+     * <p>S M  H  DoM M DoW [Y]
      *
      * @return {@link CronDefinition} instance, never {@code null}
      */
@@ -414,7 +413,7 @@ public class CronDefinitionBuilder {
 
     /**
      * Creates CronDefinition instance matching Spring (v5.2 onwards) specification.
-     * https://spring.io/blog/2020/11/10/new-in-spring-5-3-improved-cron-expressions
+     * <a href="https://spring.io/blog/2020/11/10/new-in-spring-5-3-improved-cron-expressions">...</a>
      *
      * <p>The cron expression is expected to be a string comprised of 6
      * fields separated by white space. Fields can contain any of the allowed
@@ -498,9 +497,9 @@ public class CronDefinitionBuilder {
         return CronDefinitionBuilder.defineCron()
                 .withMinutes().withValidRange(0, 59).withStrictRange().and()
                 .withHours().withValidRange(0, 23).withStrictRange().and()
-                .withDayOfMonth().withValidRange(1, 31).withStrictRange().and()
+                .withDayOfMonth().withValidRange(1, 31).supportsL().supportsLW().supportsW().withStrictRange().and()
                 .withMonth().withValidRange(1, 12).withStrictRange().and()
-                .withDayOfWeek().withValidRange(0, 7).withMondayDoWValue(1).withIntMapping(7, 0).withStrictRange().and()
+                .withDayOfWeek().withValidRange(0, 7).withMondayDoWValue(1).withIntMapping(7, 0).supportsL().supportsW().withStrictRange().and()
                 .instance();
     }
 
@@ -511,19 +510,12 @@ public class CronDefinitionBuilder {
      * @return CronDefinition instance if definition is found; a RuntimeException otherwise.
      */
     public static CronDefinition instanceDefinitionFor(final CronType cronType) {
-        switch (cronType) {
-            case CRON4J:
-                return cron4j();
-            case QUARTZ:
-                return quartz();
-            case UNIX:
-                return unixCrontab();
-            case SPRING:
-                return spring();
-            case SPRING53:
-                return spring53();
-            default:
-                throw new IllegalArgumentException(String.format("No cron definition found for %s", cronType));
-        }
+        return switch (cronType) {
+            case CRON4J -> cron4j();
+            case QUARTZ -> quartz();
+            case UNIX -> unixCrontab();
+            case SPRING -> spring();
+            case SPRING53 -> spring53();
+        };
     }
 }
