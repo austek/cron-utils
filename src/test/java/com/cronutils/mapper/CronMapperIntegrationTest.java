@@ -72,7 +72,12 @@ class CronMapperIntegrationTest {
                 Arguments.of(QUARTZ, CronMapper.fromQuartzToUnix(), "0 30 17 ? * 7L *", "30 17 * * 6L"),
                 Arguments.of(SPRING, CronMapper.fromSpringToQuartz(), "0 0 0 ? * 5#1", "0 0 0 ? * 6#1 *"),
                 Arguments.of(UNIX, CronMapper.fromUnixToQuartz(), "* * * * 3,5-6,*/2,2/3,7/4", "0 * * ? * 4,6-7,*/2,3/3,1/4 *"),
-                Arguments.of(UNIX, CronMapper.fromUnixToQuartz(), "0 0 * * 1", "0 0 0 ? * 2 *")
+                Arguments.of(UNIX, CronMapper.fromUnixToQuartz(), "0 0 * * 1", "0 0 0 ? * 2 *"),
+                Arguments.of(UNIX, CronMapper.fromUnixToQuartz(), "0 0 L * *", "0 0 0 L * ? *"),
+                Arguments.of(UNIX, CronMapper.fromUnixToQuartz(), "0 0 L-3 * *", "0 0 0 L-3 * ? *"),
+                Arguments.of(UNIX, CronMapper.fromUnixToQuartz(), "0 13 LW * *", "0 0 13 LW * ? *"),
+                Arguments.of(UNIX, CronMapper.fromUnixToQuartz(), "0 1 1W * *", "0 0 1 1W * ? *"),
+                Arguments.of(UNIX, CronMapper.fromUnixToQuartz(), "0 0 * * 6L", "0 0 0 ? * 7L *")
         );
     }
 

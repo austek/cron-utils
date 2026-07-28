@@ -491,6 +491,11 @@ public class CronDefinitionBuilder {
     /**
      * Creates CronDefinition instance matching unix crontab specification.
      *
+     * <p>Beyond the POSIX crontab syntax, day of month additionally accepts {@code L}, {@code L-n},
+     * {@code nW} and {@code LW}, and day of week additionally accepts {@code L} and {@code nL}.
+     *
+     * <p>M H DoM M DoW
+     *
      * @return CronDefinition instance, never null;
      */
     private static CronDefinition unixCrontab() {
@@ -499,7 +504,7 @@ public class CronDefinitionBuilder {
                 .withHours().withValidRange(0, 23).withStrictRange().and()
                 .withDayOfMonth().withValidRange(1, 31).supportsL().supportsLW().supportsW().withStrictRange().and()
                 .withMonth().withValidRange(1, 12).withStrictRange().and()
-                .withDayOfWeek().withValidRange(0, 7).withMondayDoWValue(1).withIntMapping(7, 0).supportsL().supportsW().withStrictRange().and()
+                .withDayOfWeek().withValidRange(0, 7).withMondayDoWValue(1).withIntMapping(7, 0).supportsL().withStrictRange().and()
                 .instance();
     }
 
