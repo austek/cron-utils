@@ -124,7 +124,7 @@ public class CronDescriptorTest {
         results.add(new CronField(CronFieldName.MINUTE, FieldExpression.always(), nullFieldConstraints));
         results.add(new CronField(CronFieldName.SECOND, FieldExpression.always(), nullFieldConstraints));
         results.add(new CronField(CronFieldName.MONTH, new On(new IntegerFieldValue(month)), nullFieldConstraints));
-        assertEquals("every second at February month", descriptor.describe(new SingleCron(mockDefinition, results)));
+        assertEquals("every second in February", descriptor.describe(new SingleCron(mockDefinition, results)));
     }
 
     @Test

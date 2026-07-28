@@ -19,6 +19,7 @@ import com.cronutils.model.field.definition.FieldDefinition;
 import com.cronutils.model.field.expression.Every;
 import com.cronutils.model.field.expression.FieldExpression;
 import com.cronutils.model.field.expression.On;
+import com.cronutils.model.field.value.SpecialChar;
 
 import java.text.MessageFormat;
 import java.time.DayOfWeek;
@@ -56,7 +57,7 @@ class DescriptionStrategyFactory {
             return DayOfWeek.of(integer + diff < 1 ? 7 : integer + diff).getDisplayName(TextStyle.FULL, bundle.getLocale());
         };
 
-        final NominalDescriptionStrategy dow = new NominalDescriptionStrategy(bundle, nominal, expression);
+        final NominalDescriptionStrategy dow = new NominalDescriptionStrategy(bundle, nominal, expression).withSelfDescribingValues();
 
         dow.addDescription(fieldExpression -> {
             if (fieldExpression instanceof On) {
@@ -104,6 +105,8 @@ class DescriptionStrategyFactory {
                         }
                     case LW:
                         return bundle.getString("last_weekday_of_month");
+                    case NONE:
+                        return MessageFormat.format(bundle.getString("on_day_x"), on.getTime().getValue());
                     default:
                         return "";
                 }
@@ -121,13 +124,38 @@ class DescriptionStrategyFactory {
      * @return - DescriptionStrategy instance, never null
      */
     public static DescriptionStrategy monthsInstance(final ResourceBundle bundle, final FieldExpression expression) {
-        Function<Integer, String> mappingFunction;
-        if (expression instanceof Every) {
-            mappingFunction = Object::toString;
-        } else {
-            mappingFunction = integer -> Month.of(integer).getDisplayName(TextStyle.FULL, bundle.getLocale());
-        }
-        return new NominalDescriptionStrategy(bundle, mappingFunction, expression);
+        final Function<Integer, String> nominal = integer -> Month.of(integer).getDisplayName(TextStyle.FULL, bundle.getLocale());
+        final NominalDescriptionStrategy months =
+                new NominalDescriptionStrategy(bundle, nominal, expression).withSelfDescribingValues();
+
+        months.addDescription(fieldExpression -> {
+            if (fieldExpression instanceof On && ((On) fieldExpression).getSpecialChar().getValue() == SpecialChar.NONE) {
+                return MessageFormat.format(bundle.getString("in_month_x"), nominal.apply(((On) fieldExpression).getTime().getValue()));
+            }
+            return "";
+        });
+        return months;
+    }
+
+    /**
+     * Creates description strategy for years.
+     *
+     * @param bundle     - locale
+     * @param expression - CronFieldExpression
+     * @return - DescriptionStrategy instance, never null
+     */
+    public static DescriptionStrategy yearsInstance(final ResourceBundle bundle, final FieldExpression expression) {
+        final NominalDescriptionStrategy years =
+                new NominalDescriptionStrategy(bundle, null, expression).withSelfDescribingValues();
+
+        years.addDescription(fieldExpression -> {
+            if (fieldExpression instanceof On && ((On) fieldExpression).getSpecialChar().getValue() == SpecialChar.NONE) {
+                // as a String, so MessageFormat does not group four digit years into "2,005"
+                return MessageFormat.format(bundle.getString("in_year_x"), String.valueOf(((On) fieldExpression).getTime().getValue()));
+            }
+            return "";
+        });
+        return years;
     }
 
     /**

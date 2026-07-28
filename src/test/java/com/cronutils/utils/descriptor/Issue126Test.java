@@ -47,8 +47,8 @@ public class Issue126Test {
      */
     @ParameterizedTest
     @CsvSource({
-            "'0 59 10 ? 1/2 MON#1 *', 'at 10:59 every 2 months from month 1 on the first Monday of the month'",
-            "'0 59 10 ? 3 MON#1 *',   'at 10:59 at March month on the first Monday of the month'"
+            "'0 59 10 ? 1/2 MON#1 *', 'at 10:59 every 2 months from January on the first Monday of the month'",
+            "'0 59 10 ? 3 MON#1 *',   'at 10:59 in March on the first Monday of the month'"
     })
     public void aRestrictedMonthIsNotContradicted(String expression, String expected) {
         assertEquals(expected, CronDescriptor.instance(Locale.ENGLISH).describe(parser.parse(expression)));

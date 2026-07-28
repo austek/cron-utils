@@ -48,4 +48,45 @@ public class Issue3Test {
     public void nonZeroAndCollapsibleMinutesAreUnaffected(String expression, String expected) {
         assertEquals(expected, CronDescriptor.instance(Locale.ENGLISH).describe(parser.parse(expression)));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'0 0 0 1 1 ?',      'at 00:00 on day 1 in January'",
+            "'0 11 11 11 11 ?',  'at 11:11 on day 11 in November'",
+            "'0 15 10 * * ? 2005', 'at 10:15 in 2005'"
+    })
+    public void dayOfMonthMonthAndYearReadAsProse(String expression, String expected) {
+        assertEquals(expected, CronDescriptor.instance(Locale.ENGLISH).describe(parser.parse(expression)));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'0/1 * * * * ?', 'every second'",
+            "'*/1 * * * * ?', 'every second'",
+            "'* * * * * ?',   'every second'"
+    })
+    public void aPeriodOfOneFromZeroDropsTheRedundantStart(String expression, String expected) {
+        assertEquals(expected, CronDescriptor.instance(Locale.ENGLISH).describe(parser.parse(expression)));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'5/1 * * * * ?',  'every second from second 5'",
+            "'0 0/5 14 * * ?', 'every 5 minutes from minute 0 at 14 hour'",
+            "'0 0 0 3/5 * ?',  'at 00:00 every 5 days from day 3'"
+    })
+    public void aMeaningfulStartIsKept(String expression, String expected) {
+        assertEquals(expected, CronDescriptor.instance(Locale.ENGLISH).describe(parser.parse(expression)));
+    }
+
+    /**
+     * The expression from Naxos84's 2017 comment on issue 3, which described month 10 as
+     * "month 10" rather than October and the year start as "year 2017".
+     */
+    @org.junit.jupiter.api.Test
+    public void everyFieldAsAnEveryWithAStart() {
+        assertEquals("every 4 seconds from second 3 every 6 minutes from minute 5 every 8 hours from hour 7 "
+                        + "every 2 days from day 9 every 2 months from October every 2 years from 2017",
+                CronDescriptor.instance(Locale.ENGLISH).describe(parser.parse("3/4 5/6 7/8 9/2 10/2 ? 2017/2")));
+    }
 }
