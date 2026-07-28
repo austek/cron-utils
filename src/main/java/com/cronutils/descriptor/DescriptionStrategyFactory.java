@@ -16,6 +16,7 @@ package com.cronutils.descriptor;
 import com.cronutils.Function;
 import com.cronutils.model.field.definition.DayOfWeekFieldDefinition;
 import com.cronutils.model.field.definition.FieldDefinition;
+import com.cronutils.model.field.expression.And;
 import com.cronutils.model.field.expression.Every;
 import com.cronutils.model.field.expression.FieldExpression;
 import com.cronutils.model.field.expression.On;
@@ -25,6 +26,8 @@ import java.text.MessageFormat;
 import java.time.DayOfWeek;
 import java.time.Month;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 class DescriptionStrategyFactory {
@@ -39,6 +42,34 @@ class DescriptionStrategyFactory {
     private static String ordinal(final int nth, final ResourceBundle bundle) {
         final String key = "nth_" + nth;
         return bundle.containsKey(key) ? bundle.getString(key) : String.valueOf(nth);
+    }
+
+    /**
+     * Joins a list of plain On values as "a, b and c", so a list can reuse the same phrasing
+     * as the single value case.
+     *
+     * @return the joined values, or null if the expression is not a list of at least two plain On values
+     */
+    private static String joinPlainValues(final FieldExpression expression, final Function<Integer, String> nominal, final ResourceBundle bundle) {
+        if (!(expression instanceof And)) {
+            return null;
+        }
+        final List<String> values = new ArrayList<>();
+        for (final FieldExpression each : ((And) expression).getExpressions()) {
+            if (!(each instanceof On) || ((On) each).getSpecialChar().getValue() != SpecialChar.NONE) {
+                return null;
+            }
+            values.add(nominal.apply(((On) each).getTime().getValue()));
+        }
+        if (values.size() < 2) {
+            return null;
+        }
+        final String last = values.remove(values.size() - 1);
+        return String.join(", ", values) + " " + bundle.getString("and") + " " + last;
+    }
+
+    private static boolean isPlainOn(final FieldExpression expression) {
+        return expression instanceof On && ((On) expression).getSpecialChar().getValue() == SpecialChar.NONE;
     }
 
     /**
@@ -68,11 +99,14 @@ class DescriptionStrategyFactory {
                                 ordinal(on.getNth().getValue(), bundle), nominal.apply(on.getTime().getValue()));
                     case L:
                         return MessageFormat.format(bundle.getString("on_last_day_of_week_x"), nominal.apply(on.getTime().getValue()));
+                    case NONE:
+                        return MessageFormat.format(bundle.getString("on_day_of_week_x"), nominal.apply(on.getTime().getValue()));
                     default:
                         return "";
                 }
             }
-            return "";
+            final String joined = joinPlainValues(fieldExpression, nominal, bundle);
+            return joined == null ? "" : MessageFormat.format(bundle.getString("on_day_of_week_x"), joined);
         });
         return dow;
     }
@@ -111,7 +145,8 @@ class DescriptionStrategyFactory {
                         return "";
                 }
             }
-            return "";
+            final String joined = joinPlainValues(fieldExpression, Object::toString, bundle);
+            return joined == null ? "" : MessageFormat.format(bundle.getString("on_days_x"), joined);
         });
         return dom;
     }
@@ -129,10 +164,11 @@ class DescriptionStrategyFactory {
                 new NominalDescriptionStrategy(bundle, nominal, expression).withSelfDescribingValues();
 
         months.addDescription(fieldExpression -> {
-            if (fieldExpression instanceof On && ((On) fieldExpression).getSpecialChar().getValue() == SpecialChar.NONE) {
+            if (isPlainOn(fieldExpression)) {
                 return MessageFormat.format(bundle.getString("in_month_x"), nominal.apply(((On) fieldExpression).getTime().getValue()));
             }
-            return "";
+            final String joined = joinPlainValues(fieldExpression, nominal, bundle);
+            return joined == null ? "" : MessageFormat.format(bundle.getString("in_month_x"), joined);
         });
         return months;
     }
@@ -149,11 +185,12 @@ class DescriptionStrategyFactory {
                 new NominalDescriptionStrategy(bundle, null, expression).withSelfDescribingValues();
 
         years.addDescription(fieldExpression -> {
-            if (fieldExpression instanceof On && ((On) fieldExpression).getSpecialChar().getValue() == SpecialChar.NONE) {
-                // as a String, so MessageFormat does not group four digit years into "2,005"
+            // as Strings, so MessageFormat does not group four digit years into "2,005"
+            if (isPlainOn(fieldExpression)) {
                 return MessageFormat.format(bundle.getString("in_year_x"), String.valueOf(((On) fieldExpression).getTime().getValue()));
             }
-            return "";
+            final String joined = joinPlainValues(fieldExpression, String::valueOf, bundle);
+            return joined == null ? "" : MessageFormat.format(bundle.getString("in_year_x"), joined);
         });
         return years;
     }

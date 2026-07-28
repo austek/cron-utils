@@ -123,7 +123,7 @@ public class CronDescriptorQuartzIntegrationTest {
      */
     @Test
     public void testDescriptionDayOfWeek() {
-        assertExpression("* 0/1 * ? * TUE", "every second every minute at Tuesday day");
+        assertExpression("* 0/1 * ? * TUE", "every second every minute on Tuesday");
     }
 
     /**
